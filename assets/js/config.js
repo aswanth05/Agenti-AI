@@ -10,7 +10,7 @@ window.SITE_CONFIG = {
   whatsappDisplay: "+1 (732) 585-2231",
 
   // Message pre-filled when a visitor taps any WhatsApp button
-  whatsappMessage: "Hi Ashwanth, I found your website and I'd like to talk about an AI agent for my business.",
+  whatsappMessage: "Hi Aswanth, I found your website and I'd like to talk about an AI agent for my business.",
 
   // Web3Forms access key for the "Book a call" form.
   // Get one free at https://web3forms.com (enter the email you want submissions sent to).

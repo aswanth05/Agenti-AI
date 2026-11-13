@@ -1,4 +1,4 @@
-# Ashwanth — Portfolio
+# Aswanth Saranu — Portfolio
 
 Static site (HTML + CSS + JS, no build step) built for GitHub Pages.
 
@@ -10,7 +10,7 @@ Static site (HTML + CSS + JS, no build step) built for GitHub Pages.
 | Web3Forms key (Book-a-call form → your email) | `assets/js/config.js`. Get a free key at web3forms.com |
 | Projects (8 placeholder cards) | `assets/js/projects.js` |
 | About-me text | `index.html`, the `#aboutText` paragraph |
-| Photo | replace `assets/img/ashwanth.jpg` (portrait, ~820px wide, keep under 200 KB) |
+| Photo | replace `assets/img/aswanth.jpg` (portrait, ~820px wide, keep under 200 KB) |
 
 Until the Web3Forms key is set, the form falls back to opening WhatsApp with the visitor's details pre-filled.
 

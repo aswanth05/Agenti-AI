@@ -479,7 +479,7 @@
 
       if (!keyOk) {
         // No form backend configured yet: hand the request over via WhatsApp instead
-        const msg = `Hi Ashwanth, I'd like to book a call.\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nRequirement: ${data.requirement}`;
+        const msg = `Hi Aswanth, I'd like to book a call.\n\nName: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone}\nRequirement: ${data.requirement}`;
         if (waConfigured) {
           window.open(waLink(msg), "_blank", "noopener");
           setStatus("Opening WhatsApp with your details…", "ok");

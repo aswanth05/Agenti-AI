@@ -1,5 +1,5 @@
 /* =============================================================
-   Ashwanth — Agentic AI Developer
+   Aswanth Saranu — Agentic AI Developer
    One dark multi-hue theme across the whole site.
    ============================================================= */
 
@@ -361,6 +361,7 @@ section { position: relative; }
   letter-spacing: -0.055em;
   text-transform: uppercase;
 }
+.hero__name span { display: block; }
 .hero__title {
   margin: 14px 0 0;
   font-size: clamp(2rem, 4.2vw, 3.4rem);
