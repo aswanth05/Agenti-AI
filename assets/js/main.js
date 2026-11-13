@@ -10,6 +10,28 @@
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
   /* -----------------------------------------------------------
+     Always open at the top of the page (no restored scroll, no #hash jump)
+     ----------------------------------------------------------- */
+  if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  const toTop = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  toTop();
+  window.addEventListener("load", toTop);
+
+  // Section links scroll smoothly without adding #section to the address
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const id = a.getAttribute("href").slice(1);
+    if (!id) return e.preventDefault();
+    const target = id === "top" ? null : document.getElementById(id);
+    if (id !== "top" && !target) return;
+    e.preventDefault();
+    if (target) target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+    else window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+  });
+
+  /* -----------------------------------------------------------
      WhatsApp links — one number, configured in config.js
      ----------------------------------------------------------- */
   const waNumber = String(CONFIG.whatsappNumber || "").replace(/\D/g, "");
@@ -241,7 +263,36 @@
     function computeLayout() {
       const W = stage.clientWidth;
       const H = stage.clientHeight;
-      V = W < 640 ? 3 : W < 1040 ? 5 : 7;
+
+      // Phones & tablets in portrait: a large centre card with smaller, dimmed
+      // neighbours peeking in from each side (3 on phones, 5 on tablets)
+      if (W < 1040) {
+        V = W < 640 ? 3 : 5;
+        const cw = W < 640 ? Math.min(W * 0.64, 270) : Math.min(W * 0.36, 320);
+        const ch = Math.min(cw * 1.42, H * 0.82);
+        const levels = [
+          { k: 1, ry: 0, tz: 0, z: 30, b: 1 },
+          { k: 0.8, ry: 16, tz: -40, z: 20, b: 0.55 },
+          { k: 0.64, ry: 24, tz: -80, z: 10, b: 0.35 },
+        ];
+        const xs = [0];
+        for (let l = 1; l < levels.length; l++) {
+          const wPrev = cw * levels[l - 1].k, wCur = cw * levels[l].k;
+          xs[l] = xs[l - 1] + wPrev / 2 + wCur / 2 - wCur * 0.3;
+        }
+        const half = (V - 1) / 2;
+        slots = [];
+        for (let s = 0; s < V; s++) {
+          const d = s - half, l = Math.abs(d), L = levels[l], sg = Math.sign(d);
+          slots.push({ x: sg * xs[l], w: cw * L.k, h: ch * L.k, ry: -sg * L.ry, tz: L.tz, z: L.z, b: L.b });
+        }
+        const edge = slots[V - 1];
+        enterPos = { ...slots[0], x: slots[0].x - edge.w, o: 0 };
+        exitPos = { ...edge, x: edge.x + edge.w, o: 0 };
+        return;
+      }
+
+      V = 7;
       V = Math.max(1, Math.min(V, N - 1));
       if (V % 2 === 0) V -= 1;
       const half = (V - 1) / 2 || 1;
@@ -255,16 +306,16 @@
         const a = Math.abs(d) / half;
         raw.push({
           d, a,
-          fw: 1 + 0.5 * a,               // width grows toward the edges
+          fw: 1 + 0.4 * a,               // width grows toward the edges
           fh: 1 + 0.36 * a * a + 0.1 * a, // height grows a little differently → shape changes
           ry: -Math.sign(d) * maxRot * a,
         });
       }
       const projSum = raw.reduce((t, r) => t + r.fw * Math.cos((r.ry * Math.PI) / 180), 0);
       // On phones the outer cards bleed off the edges so the centre card stays readable
-      let wC = (W * (W < 640 ? 1.3 : 0.9) - gap * (V - 1)) / projSum;
-      wC = Math.min(wC, W < 640 ? 150 : 200);
-      let hC = wC * 1.6;
+      let wC = (W * 0.88 - gap * (V - 1)) / projSum;
+      wC = Math.min(wC, 210);
+      let hC = wC * 1.7;
       const maxH = H * 0.82;
       const maxFh = Math.max(...raw.map((r) => r.fh));
       if (hC * maxFh > maxH) hC = maxH / maxFh;
@@ -299,7 +350,7 @@
       el.style.setProperty("--ry", `${(extra.ry ?? g.ry).toFixed(2)}deg`);
       el.style.setProperty("--tz", `${(extra.tz ?? g.tz).toFixed(1)}px`);
       el.style.setProperty("--o", o);
-      el.style.setProperty("--b", extra.b ?? 1);
+      el.style.setProperty("--b", extra.b ?? g.b ?? 1);
       el.style.zIndex = extra.zIndex ?? g.z ?? 1;
       el.style.pointerEvents = o === 0 ? "none" : "";
       el.setAttribute("aria-hidden", o === 0 ? "true" : "false");
@@ -313,7 +364,7 @@
       const fh = Math.min(500, H * 0.94);
       const lim = W / 2 - fw / 2 - 12;
       return {
-        x: Math.max(-lim, Math.min(lim, g.x)),
+        x: W < 1040 ? 0 : Math.max(-lim, Math.min(lim, g.x)),
         w: fw,
         h: fh,
         ry: 0,

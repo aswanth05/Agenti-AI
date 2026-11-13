@@ -807,6 +807,12 @@ section { position: relative; }
   will-change: transform, width, height;
 }
 .pcard.no-anim { transition: none !important; }
+.pcard { container-type: inline-size; }
+/* Narrow cards: keep just the number and name so nothing overlaps */
+@container (max-width: 150px) {
+  .pcard__flag, .pcard__tag { display: none; }
+  .pcard__name { font-size: 15px; }
+}
 .stage.has-focus .pcard {
   transition:
     transform 0.75s var(--ease),
@@ -1170,7 +1176,10 @@ section { position: relative; }
   .section-head { margin-bottom: 40px; }
   .glass { padding: 28px 22px; }
   .glass--form { padding: 24px 18px; }
-  .stage { height: 470px; }
+  .stage { height: 440px; }
+  .projects .section-head { margin-bottom: 8px; }
+  .pcard__name { font-size: 18px; }
+  .pcard__tag { font-size: 13.5px; }
 }
 
 /* Touch devices: no hover-lift, give pressed feedback instead */
