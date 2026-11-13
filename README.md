@@ -29,7 +29,7 @@
 Every agent I ship follows the same production pattern. It is a controlled loop with tools, memory, guardrails and a human in the loop where it matters, not a single prompt.
 
 ```mermaid
-flowchart LR
+flowchart TD
     T([Trigger<br/>message · schedule · webhook · form]) --> P[Plan<br/>understand the goal,<br/>break it into steps]
     P --> A{Act}
     A -->|look up| K[(Knowledge<br/>RAG over your docs & data)]
