@@ -14,6 +14,14 @@ Static site (HTML + CSS + JS, no build step) built for GitHub Pages.
 
 Until the Web3Forms key is set, the form falls back to opening WhatsApp with the visitor's details pre-filled.
 
+## Mobile / app install
+
+The site is installable as an app (PWA):
+- **iPhone (Safari):** Share → *Add to Home Screen*
+- **Android (Chrome):** ⋮ menu → *Install app* / *Add to Home screen*
+
+App name, colours and icons live in `manifest.webmanifest` and `assets/img/icon-*.png`.
+
 ## Preview locally
 
 ```bash

@@ -48,6 +48,7 @@
 
   const setMenu = (open) => {
     nav.classList.toggle("is-open", open);
+    document.body.classList.toggle("menu-open", open);
     toggle.setAttribute("aria-expanded", String(open));
     toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   };
@@ -175,7 +176,7 @@
 
     const STEP_MS = 2000;
     const hint = $("#projectsHint");
-    if (hint && !canHover) hint.textContent = "Tap a card to bring it forward.";
+    if (hint && !canHover) hint.textContent = "Swipe to browse · tap a card to open it.";
     const PALETTES = [
       ["#ff6a2b", "#d6249f", "#ffc93c"],
       ["#7c5cff", "#19c3a6", "#ff4fa3"],
@@ -234,6 +235,7 @@
     let timer = null;
     let inView = false;
     let leaveT = null;
+    let dir = 1; // 1 = moving right (auto-play), -1 = swiped back
     const prevSlot = new Array(N).fill(-1);
 
     function computeLayout() {
@@ -329,17 +331,19 @@
         const s = (i + offset) % N;
         const visible = s < V;
 
-        // A card wrapping round re-enters from the left edge, not by flying across
-        if (animate && visible && s === 0 && prevSlot[i] !== 0 && prevSlot[i] !== -1) {
+        // A card coming back into view slides in from the nearest edge, never across the rail
+        const wasHidden = prevSlot[i] >= V;
+        const wrapped = prevSlot[i] !== -1 && Math.abs(s - prevSlot[i]) > 1;
+        if (animate && visible && (wasHidden || wrapped)) {
           el.classList.add("no-anim");
-          setVars(el, enterPos);
+          setVars(el, s === 0 ? enterPos : exitPos);
           void el.offsetWidth;
           el.classList.remove("no-anim");
         }
         if (!animate) el.classList.add("no-anim");
 
         if (!visible) {
-          setVars(el, exitPos);
+          setVars(el, dir > 0 ? exitPos : enterPos);
         } else if (el === focused) {
           setVars(el, slots[s], focusGeometry(slots[s]));
         } else if (focused) {
@@ -360,7 +364,13 @@
     }
 
     function advance() {
+      dir = 1;
       offset = (offset + 1) % N;
+      render(true);
+    }
+    function back() {
+      dir = -1;
+      offset = (offset - 1 + N) % N;
       render(true);
     }
 
@@ -408,6 +418,24 @@
     document.addEventListener("click", (e) => {
       if (focused && !e.target.closest(".pcard")) setFocus(null);
     });
+
+    // Swipe left/right on phones and tablets
+    let sx = 0, sy = 0, swiping = false;
+    stage.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      sx = t.clientX; sy = t.clientY; swiping = true;
+    }, { passive: true });
+    stage.addEventListener("touchend", (e) => {
+      if (!swiping) return;
+      swiping = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      if (focused) { cards.forEach((c) => c.classList.remove("is-focus")); focused = null; }
+      stop();
+      dx > 0 ? advance() : back();
+      start();
+    }, { passive: true });
 
     // Only run while the section is on screen and the tab is visible
     new IntersectionObserver(
